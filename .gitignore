@@ -1,0 +1,9 @@
+# OS files
+.DS_Store
+Icon?
+.Spotlight-V100
+.Trashes
+
+*.gem
+Gemfile.lock
+
