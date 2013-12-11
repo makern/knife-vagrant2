@@ -1,4 +1,4 @@
-Knife Vagrant2
+knife-vagrant2
 ==============
 
 This plugin gives knife the ability to create, bootstrap, and manage Vagrant instances.
@@ -8,7 +8,7 @@ The plugin is a rewrite of the original [knife-vagrant](https://github.com/garre
 
 Installation
 ------------
-If you are using bundler, simply add Chef and Knife Vagrant2 to your `Gemfile`:
+If you are using bundler, simply add Chef and knife-vagrant2 to your `Gemfile`:
 
 ```ruby
 gem 'chef'
@@ -22,15 +22,19 @@ If you are not using bundler, you can install the gem manually:
 
 Usage
 -----
-Knife Vagrant2 creates a /vagrant subfolder in your project and which it uses to manage Vagrant files for all the instances you launch. You should add this folder to your .gitignore file so it is never checked into version control.
+knife-vagrant2 creates a `/vagrant` subfolder in your project and which it uses to manage Vagrant files for all the instances you launch. You should add this folder to your `.gitignore` file so it is never checked into version control.
 
 To launch a new VM use the `server create` command:
 
-    knife vagrant server create --box-url http://files.vagrantup.com/precise32.box -N webserver -r role[webserver]
+    knife vagrant server create --box-url http://files.vagrantup.com/precise32.box -N db -r role[db]
 
-This will launch a new VM using the `precise32` box, give the node a Chef name of `webserver` and then use knife to provision the VM with the `webserver` role. If a box is already installed into vagrant use `--box` instead of `--box-url` to reference it.
+This will launch a new VM using the `precise32` box, give the node a Chef name of `db` and then use knife to provision the VM with the `db` role.
 
-By default knife-vagrant2 picks a private IP address from a predefined pool and assigns it to the VM. You can specify the IP pool using `--subnet` or assign a specfic IP with `--private-ip-address`. To map folders between host and VM use `--share-folders NAME::GUEST_PATH::HOST_PATH`.
+If a box is already installed into vagrant use `--box` instead of `--box-url` to reference it.
+
+By default knife-vagrant2 picks a private IP address from a predefined pool and assigns it to the VM. You can specify the IP pool using `--subnet` or assign a specfic IP with `--private-ip-address`.
+
+To map folders between host and VM use `--share-folders NAME::GUEST_PATH::HOST_PATH`.
 
 After a VM has been created its Chef name is used to reference it in future commands. Most commands map directly to the Vagrant ones:
 
