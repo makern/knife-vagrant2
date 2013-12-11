@@ -22,7 +22,7 @@ If you are not using bundler, you can install the gem manually:
 
 Usage
 -----
-knife-vagrant2 creates a `/vagrant` subfolder in your project and which it uses to manage Vagrant files for all the instances you launch. You should add this folder to your `.gitignore` file so it is never checked into version control.
+knife-vagrant2 creates a `/vagrant` subfolder in your project which it uses to manage Vagrant files for all the instances you launch. You should add this folder to your `.gitignore` file so it is never checked into version control.
 
 To launch a new VM use the `server create` command:
 
