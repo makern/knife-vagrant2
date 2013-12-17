@@ -193,7 +193,7 @@ class Chef
       end
 
       def build_port_forwards(ports)
-        ports.collect { |k, v| "config.vm.network :forwarded_port, host: #{k}, guest: #{v}" }.join("\n")
+        ports.collect { |k, v| "config.vm.network :forwarded_port, host: #{k}, guest: #{v}, host_ip: '127.0.0.1'" }.join("\n")
       end
 
       def build_vb_customize(customize)
