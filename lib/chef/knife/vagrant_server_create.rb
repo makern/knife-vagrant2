@@ -28,14 +28,14 @@ class Chef
       option :memsize,
         :short => '-m MEMORY',
         :long => '--memsize MEMORY',
-        :description => 'Amount of RAM to allocate to provisioned VM, in MB.  Defaults to 1024',
+        :description => 'Amount of RAM to allocate to provisioned VM, in MB. Defaults to 1024',
         :proc => Proc.new { |m| Chef::Config[:knife][:memsize] = m },
         :default => 1024
 
       option :share_folders,
         :short => '-F',
         :long => '--share-folders SHARES',
-        :description => 'Comma separated list of share folders in the form of  NAME::GUEST_PATH::HOST_PATH',
+        :description => 'Comma separated list of share folders in the form of NAME::GUEST_PATH::HOST_PATH',
         :proc => lambda { |o| o.split(/[\s,]+/) },
         :default => []
 
@@ -139,9 +139,9 @@ class Chef
 #        :proc => Proc.new { |ip| Chef::Config[:knife][:ip_address] = ip }
 
       option :port_forward,
-        :short => '-p PORTS',
+        :short => '-f PORTS',
         :long => '--port-forward PORTS',
-        :description => "Port forwarding.  Host port, VM port separated by a colon.  E.G. to forward 9000 on the host machine to 80 on the VM, -p 9000:80.  To list multiple forwards separate with a comma",
+        :description => "Comma separated list of HOST:GUEST ports to forward",
         :proc => lambda { |o| Hash[o.split(/,/).collect { |a| a.split(/:/) }] },
         :default => {}
 
@@ -156,14 +156,6 @@ class Chef
         :description => "Key-value pairs of VirtualBox Guest Additions properties. Key and value separated with \"=\", pairs separated with a comma",
         :proc => lambda { |o| Hash[o.split(/,/).collect { |a| a.split(/=/) }] },
         :default => {}
-
-      def build_port_forwards(ports)
-        ports.collect { |k, v| "config.vm.network :forwarded_port, host: #{k}, guest: #{v}" }.join("\n")
-      end
-
-      def build_vb_guest_properties(guest_properties)
-        guest_properties.collect { |k, v| "vb.customize [ \"guestproperty\", \"set\", :id, \"#{k}\", \"#{v}\" ]" }.join("\n")
-      end
 
       def run
         $stdout.sync = true
@@ -202,6 +194,14 @@ class Chef
         msg_pair("JSON Attributes",config[:json_attributes]) unless !config[:json_attributes] || config[:json_attributes].empty?
       end
 
+      def build_port_forwards(ports)
+        ports.collect { |k, v| "config.vm.network :forwarded_port, host: #{k}, guest: #{v}" }.join("\n")
+      end
+
+      def build_vb_guest_properties(guest_properties)
+        guest_properties.collect { |k, v| "vb.customize [ \"guestproperty\", \"set\", :id, \"#{k}\", \"#{v}\" ]" }.join("\n")
+      end
+
       def write_vagrantfile
         shares = []
         @server.share_folders.each do |share|
@@ -222,7 +222,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.network :private_network, ip: "#{@server.ip_address}"
 
-  #{build_port_forwards(config[:port_forward])}
+  #{build_port_forwards(@server.port_forward)}
 
   #{shares.join("\n")}
   
@@ -314,6 +314,7 @@ end
           :box_url => locate_config_value(:box_url),
           :memsize => locate_config_value(:memsize),
           :share_folders => config[:share_folders],
+          :port_forward => config[:port_forward],
           :use_cachier => config[:use_cachier]
         }
 
