@@ -151,8 +151,18 @@ class Chef
         :boolean => true,
         :default => true
 
+      option :vb_guest_properties,
+        :long => "--vb-guest-properties GUEST_PROPERTIES",
+        :description => "Key-value pairs of VirtualBox Guest Additions properties. Key and value separated with \"=\", pairs separated with a comma",
+        :proc => lambda { |o| Hash[o.split(/,/).collect { |a| a.split(/=/) }] },
+        :default => {}
+
       def build_port_forwards(ports)
         ports.collect { |k, v| "config.vm.network :forwarded_port, host: #{k}, guest: #{v}" }.join("\n")
+      end
+
+      def build_vb_guest_properties(guest_properties)
+        guest_properties.collect { |k, v| "vb.customize [ \"guestproperty\", \"set\", :id, \"#{k}\", \"#{v}\" ]" }.join("\n")
       end
 
       def run
@@ -181,7 +191,7 @@ class Chef
 
         print "\n#{ui.color("Bootstraping instance", :magenta)}\n"
         bootstrap_node(@server,@server.ip_address).run
- 
+
 
         puts "\n"
         msg_pair("Instance Name", @server.name)
@@ -218,6 +228,7 @@ Vagrant.configure("2") do |config|
   
   config.vm.provider :virtualbox do |vb|
     vb.customize [ "modifyvm", :id, "--memory", #{@server.memsize} ]
+    #{build_vb_guest_properties(config[:vb_guest_properties])}
   end
   
   config.vm.provider :vmware_fusion do |v|
