@@ -1,3 +1,10 @@
+# 0.0.3 (unreleased)
+
+## Changes and new features
+
+## Fixes
+
+
 # 0.0.2 (2013-12-17)
 
 ## Changes and new features
