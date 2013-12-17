@@ -35,7 +35,7 @@ class Chef
       option :share_folders,
         :short => '-F',
         :long => '--share-folders SHARES',
-        :description => 'Comma separated list of share folders in the form of NAME::GUEST_PATH::HOST_PATH',
+        :description => 'Comma separated list of share folders in the form of HOST_PATH::GUEST_PATH',
         :proc => lambda { |o| o.split(/[\s,]+/) },
         :default => []
 
@@ -151,11 +151,9 @@ class Chef
         :boolean => true,
         :default => true
 
-      option :vb_guest_properties,
-        :long => "--vb-guest-properties GUEST_PROPERTIES",
-        :description => "Key-value pairs of VirtualBox Guest Additions properties. Key and value separated with \"=\", pairs separated with a comma",
-        :proc => lambda { |o| Hash[o.split(/,/).collect { |a| a.split(/=/) }] },
-        :default => {}
+      option :vb_customize,
+        :long => "--vb-customize VBOXMANAGE_COMMANDS",
+        :description => "List of customize options for the virtualbox vagrant provider separated by ::"
 
       def run
         $stdout.sync = true
@@ -191,24 +189,25 @@ class Chef
         msg_pair("IP Address", @server.ip_address)
         msg_pair("Environment", locate_config_value(:environment) || '_default')
         msg_pair("Run List", (config[:run_list] || []).join(', '))
-        msg_pair("JSON Attributes",config[:json_attributes]) unless !config[:json_attributes] || config[:json_attributes].empty?
+        msg_pair("JSON Attributes", config[:json_attributes]) unless !config[:json_attributes] || config[:json_attributes].empty?
       end
 
       def build_port_forwards(ports)
         ports.collect { |k, v| "config.vm.network :forwarded_port, host: #{k}, guest: #{v}" }.join("\n")
       end
 
-      def build_vb_guest_properties(guest_properties)
-        guest_properties.collect { |k, v| "vb.customize [ \"guestproperty\", \"set\", :id, \"#{k}\", \"#{v}\" ]" }.join("\n")
+      def build_vb_customize(customize)
+        customize.split(/::/).collect { |k| "vb.customize [ #{k} ]" }.join("\n")
+      end
+
+      def build_shares(share_folders)
+        share_folders.collect do |share|
+          host, guest = share.chomp.split "::"
+          "config.vm.synced_folder '#{host}', '#{guest}'"
+        end.join("\n")
       end
 
       def write_vagrantfile
-        shares = []
-        @server.share_folders.each do |share|
-          name, guest, host = share.chomp.split "::"
-          shares << "config.vm.synced_folder '#{guest}', '#{host}'"
-        end
-
         additions = []
         if @server.use_cachier
           additions << 'config.cache.auto_detect = true' # enable vagarant-cachier
@@ -221,14 +220,13 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "#{@server.name}"
 
   config.vm.network :private_network, ip: "#{@server.ip_address}"
-
   #{build_port_forwards(@server.port_forward)}
 
-  #{shares.join("\n")}
-  
+  #{build_shares(@server.share_folders)}
+ 
   config.vm.provider :virtualbox do |vb|
     vb.customize [ "modifyvm", :id, "--memory", #{@server.memsize} ]
-    #{build_vb_guest_properties(config[:vb_guest_properties])}
+    #{build_vb_customize(@server.vb_customize)}
   end
   
   config.vm.provider :vmware_fusion do |v|
@@ -315,7 +313,8 @@ end
           :memsize => locate_config_value(:memsize),
           :share_folders => config[:share_folders],
           :port_forward => config[:port_forward],
-          :use_cachier => config[:use_cachier]
+          :use_cachier => config[:use_cachier],
+          :vb_customize => locate_config_value(:vb_customize)
         }
 
         # Get specified IP address for new instance or pick an unused one from the subnet pool.
