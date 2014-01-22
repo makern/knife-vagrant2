@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
   s.files        = `git ls-files`.split("\n")
 
   s.add_dependency 'chef', '>= 0.10.10'
+  s.add_development_dependency 'rake'
 
   s.require_paths = ['lib']
 end
