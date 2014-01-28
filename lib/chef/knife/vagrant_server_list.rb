@@ -1,4 +1,4 @@
-require 'chef/knife/ec2_base'
+require 'chef/knife/vagrant_base'
 
 class Chef
   class Knife

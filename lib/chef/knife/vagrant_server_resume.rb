@@ -1,4 +1,4 @@
-require 'chef/knife'
+require 'chef/knife/vagrant_base'
 
 class Chef
   class Knife
