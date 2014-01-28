@@ -1,8 +1,9 @@
-# 0.0.3 (unreleased)
-
-## Changes and new features
+# 0.0.3 (2014-01-28)
 
 ## Fixes
+
+* Fixed error when not using --vb-customize option
+* Removed unneeded dependency on knife-ec2
 
 
 # 0.0.2 (2013-12-17)
@@ -24,3 +25,4 @@
 # Thanks to our contributors
 
 * [Jāzeps Baško](https://github.com/jbasko)
+* [Robert J. Berger](https://github.com/rberger)
