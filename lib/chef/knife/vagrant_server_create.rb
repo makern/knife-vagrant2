@@ -197,7 +197,7 @@ class Chef
       end
 
       def build_vb_customize(customize)
-        customize.split(/::/).collect { |k| "vb.customize [ #{k} ]" }.join("\n")
+        customize.split(/::/).collect { |k| "vb.customize [ #{k} ]" }.join("\n") if customize
       end
 
       def build_shares(share_folders)
