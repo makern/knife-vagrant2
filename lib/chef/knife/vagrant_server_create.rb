@@ -178,7 +178,8 @@ class Chef
         # Create Vagrant file for new instance
         print "\n#{ui.color("Launching instance", :magenta)}\n"
         write_vagrantfile
-        vagrant_exec(@server.name, 'up', provider: locate_config_value(:provider))
+        cmd = "up --provider #{locate_config_value(:provider)}"
+        vagrant_exec(@server.name, cmd)
 
         write_insecure_key
         print "\n#{ui.color("Waiting for sshd", :magenta)}"

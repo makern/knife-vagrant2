@@ -22,14 +22,13 @@ class Chef
       def vagrant_exec(instance, cmd, opts = {})
         fetch_output = opts[:fetch_output] || false
         no_cwd_change = opts[:no_cwd_change] || false
-        provider = "--provider #{opts[:provider] || 'virtualbox'}"
 
         unless no_cwd_change
           cwd = Dir.getwd()
           Dir.chdir(File.join(locate_config_value(:vagrant_dir), instance))
         end
 
-        cmd = "vagrant #{cmd} #{provider}"
+        cmd = "vagrant #{cmd}"
         output = nil
         if defined? Bundler
           # Needed if we are run from inside a bundler environment and vagrant
