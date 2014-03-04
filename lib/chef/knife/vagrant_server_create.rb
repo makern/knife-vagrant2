@@ -155,6 +155,11 @@ class Chef
         :long => "--vb-customize VBOXMANAGE_COMMANDS",
         :description => "List of customize options for the virtualbox vagrant provider separated by ::"
 
+      option :provider,
+        :long => "--provider Provider",
+        :description => "The vagrant provider to use for the server",
+        :default => 'virtualbox'
+
       def run
         $stdout.sync = true
         validate!
@@ -173,7 +178,8 @@ class Chef
         # Create Vagrant file for new instance
         print "\n#{ui.color("Launching instance", :magenta)}\n"
         write_vagrantfile
-        vagrant_exec(@server.name, 'up')
+        cmd = "up --provider #{locate_config_value(:provider)}"
+        vagrant_exec(@server.name, cmd)
 
         write_insecure_key
         print "\n#{ui.color("Waiting for sshd", :magenta)}"
