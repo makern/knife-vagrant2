@@ -19,7 +19,9 @@ class Chef
 
           state, provider = vagrant_instance_state(instance)
 
-          unless state == 'saved'
+          # saved: VirtualBox
+          # resume: VMWare Fusion
+          unless state == 'saved' or state == 'suspended'
             ui.error("Instance #{instance} needs to be suspended for resume. Current state is #{colored_vagrant_state(state)}")
             next
           end
