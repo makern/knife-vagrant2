@@ -1,8 +1,8 @@
-# 0.0.4 (unreleased)
+# 0.0.4 (2014-03-14)
 
 ## Changes and new features
 
-## Fixes
+* Added --provider option to use vagrant providers other than virtualbox
 
 
 # 0.0.3 (2014-01-28)
@@ -33,3 +33,4 @@
 
 * [Jāzeps Baško](https://github.com/jbasko)
 * [Robert J. Berger](https://github.com/rberger)
+* [xsunsmile](https://github.com/xsunsmile)
