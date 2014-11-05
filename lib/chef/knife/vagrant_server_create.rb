@@ -6,6 +6,7 @@ class Chef
 
       include Knife::VagrantBase
       deps do
+        require 'ostruct'
         require 'ipaddr'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
@@ -94,6 +95,7 @@ class Chef
         :short => "-d DISTRO",
         :long => "--distro DISTRO",
         :description => "Bootstrap a distro using a template; default is 'chef-full'",
+        :default => 'chef-full',
         :proc => Proc.new { |d| Chef::Config[:knife][:distro] = d }
 
       option :template_file,
