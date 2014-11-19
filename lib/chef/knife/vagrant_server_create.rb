@@ -162,6 +162,10 @@ class Chef
         :description => "The vagrant provider to use for the server",
         :default => 'virtualbox'
 
+      option :inline_config,
+        :long => "--inline_config snippet",
+        :description => "A snippet of configuration to be inserted into the Vagrantfile."
+
       def run
         $stdout.sync = true
         validate!
@@ -219,6 +223,9 @@ class Chef
         additions = []
         if @server.use_cachier
           additions << 'config.cache.auto_detect = true' # enable vagarant-cachier
+        end
+        if @server.inline_config
+          additions << @server.inline_config
         end
 
         file = <<-EOF
@@ -322,7 +329,8 @@ end
           :share_folders => config[:share_folders],
           :port_forward => config[:port_forward],
           :use_cachier => config[:use_cachier],
-          :vb_customize => locate_config_value(:vb_customize)
+          :vb_customize => locate_config_value(:vb_customize),
+          :inline_config => config[:inline_config]
         }
 
         # Get specified IP address for new instance or pick an unused one from the subnet pool.
