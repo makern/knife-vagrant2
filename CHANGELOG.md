@@ -4,6 +4,9 @@
 
 ## Fixes
 
+* Fix missing `ostruct` dependency with newer Chef versions
+* Fix `--distro` default value change in newer Chef versions
+
 
 # 0.0.4 (2014-03-14)
 
@@ -41,3 +44,4 @@
 * [Jāzeps Baško](https://github.com/jbasko)
 * [Robert J. Berger](https://github.com/rberger)
 * [xsunsmile](https://github.com/xsunsmile)
+* [Mevan Samaratunga](https://github.com/mevansam)
