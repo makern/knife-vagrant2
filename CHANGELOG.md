@@ -3,6 +3,7 @@
 ## Changes and new features
 
 * Added --vmx-customize option to pass arbitrary parameters to VMware providers
+* Added --vagrant-config option to extend Vagrantfile with custom options
 
 
 ## Fixes

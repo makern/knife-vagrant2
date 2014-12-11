@@ -162,9 +162,13 @@ class Chef
         :description => "List of parameters for the vmware vagrant providers separated by ::"
 
       option :provider,
-        :long => "--provider Provider",
+        :long => "--provider PROVIDER",
         :description => "The vagrant provider to use for the server",
         :default => 'virtualbox'
+
+      option :vagrant_config,
+        :long => "--vagrant-config SETTINGS",
+        :description => "Lines of configuration to be inserted into the Vagrantfile separated by ::"
 
       def run
         $stdout.sync = true
@@ -227,6 +231,9 @@ class Chef
         additions = []
         if @server.use_cachier
           additions << 'config.cache.auto_detect = true' # enable vagarant-cachier
+        end
+        if @server.vagrant_config
+          additions << @server.vagrant_config.split(/::/)
         end
 
         file = <<-EOF
@@ -333,7 +340,8 @@ end
           :port_forward => config[:port_forward],
           :use_cachier => config[:use_cachier],
           :vb_customize => locate_config_value(:vb_customize),
-          :vmx_customize => locate_config_value(:vmx_customize)
+          :vmx_customize => locate_config_value(:vmx_customize),
+          :vagrant_config => locate_config_value(:vagrant_config)
         }
 
         # Get specified IP address for new instance or pick an unused one from the subnet pool.
