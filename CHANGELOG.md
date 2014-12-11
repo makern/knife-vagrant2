@@ -2,6 +2,9 @@
 
 ## Changes and new features
 
+* Added --vmx-customize option to pass arbitrary parameters to VMware providers
+
+
 ## Fixes
 
 * Fix missing `ostruct` dependency with newer Chef versions
