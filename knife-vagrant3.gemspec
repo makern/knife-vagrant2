@@ -3,7 +3,7 @@ $:.push File.expand_path('../lib', __FILE__)
 require 'knife-vagrant/version'
 
 Gem::Specification.new do |s|
-  s.name         = 'knife-vagrant2'
+  s.name         = 'knife-vagrant3'
   s.version      = Knife::Vagrant::VERSION
   s.authors      = ['Markus Kern']
   s.email        = ['chef@mkern.fastmail.fm']
