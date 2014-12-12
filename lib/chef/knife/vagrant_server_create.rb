@@ -157,10 +157,18 @@ class Chef
         :long => "--vb-customize VBOXMANAGE_COMMANDS",
         :description => "List of customize options for the virtualbox vagrant provider separated by ::"
 
+      option :vmx_parameters,
+        :long => "--vmx-parameters VMX_PARAMETERS",
+        :description => "List of parameters for the vmware fusion/workstation vagrant provider separated by::"
+
       option :provider,
         :long => "--provider Provider",
         :description => "The vagrant provider to use for the server",
         :default => 'virtualbox'
+
+      option :inline_config,
+        :long => "--inline_config snippet",
+        :description => "A snippet of configuration to be inserted into the Vagrantfile."
 
       def run
         $stdout.sync = true
@@ -208,6 +216,58 @@ class Chef
         customize.split(/::/).collect { |k| "vb.customize [ #{k} ]" }.join("\n") if customize
       end
 
+      def build_vmx_customize(customize,instance_dir)
+        vmx_params = ""
+        if customize
+          customize.chomp! if customize.end_with?("\n")
+          disks = {}
+          customize.split(/::/).each do |p|
+            kv = p.split('=')
+            k = kv[0].strip
+            v = kv[1].strip
+            if v
+              if k.start_with?('scsi')
+                ss = k.split('.')
+                disks[ss[0]] ||= {}
+                case ss[1]
+                  when 'fileName'
+                    if v.start_with?('/')
+                      disks[ss[0]]['fileName'] = v
+                    else
+                      v = File.expand_path(v,instance_dir)
+                      disks[ss[0]]['fileName'] = v
+                    end
+                  when 'fileSize'
+                    disks[ss[0]]['fileSize'] = v
+                    next
+                end
+              end
+              vmx_params += "v.vmx[\"#{k}\"] = \"#{v}\"\n"
+            end
+          end
+          if locate_config_value(:provider).start_with?('vmware')
+            # Create extra disks as unlike virtual box vmware-fusion/workstation
+            # will not create disks automatically based on configuration params
+            disks.each_value do |f|
+              vdiskmgr = %x(which vmware-vdiskmanager)
+              vdiskmgr = "/Applications/VMware Fusion.app/Contents/Library/vmware-vdiskmanager" if vdiskmgr.empty?
+              if File.exist?(vdiskmgr)
+                disk = f['fileName']
+                %x("#{vdiskmgr}" -c -t 0 -s #{f['fileSize']} -a ide #{disk}) unless File.exist?(f['fileName'])
+                unless File.exist?(disk)
+                  ui.error("Disk #{disk} could not be created.")
+                  exit 1
+                end
+              else
+                ui.error("Unable to determine path to vmware-vdiskmanager to create the requested additional disk.")
+                exit 1
+              end
+            end
+          end
+        end
+        vmx_params
+      end
+
       def build_shares(share_folders)
         share_folders.collect do |share|
           host, guest = share.chomp.split "::"
@@ -216,9 +276,17 @@ class Chef
       end
 
       def write_vagrantfile
+
+        # Create folder and write Vagrant file
+        instance_dir = File.join(locate_config_value(:vagrant_dir), @server.name)
+        FileUtils.mkdir_p(instance_dir)
+
         additions = []
         if @server.use_cachier
           additions << 'config.cache.auto_detect = true' # enable vagarant-cachier
+        end
+        if @server.inline_config
+          additions << @server.inline_config
         end
 
         file = <<-EOF
@@ -238,11 +306,13 @@ Vagrant.configure("2") do |config|
   end
   
   config.vm.provider :vmware_fusion do |v|
-     v.vmx["memsize"] = "#{@server.memsize}"
+    v.vmx["memsize"] = "#{@server.memsize}"
+    #{build_vmx_customize(@server.vmx_parameters,instance_dir)}
   end
 
   config.vm.provider :vmware_workstation do |v|
-     v.vmx["memsize"] = "#{@server.memsize}"
+    v.vmx["memsize"] = "#{@server.memsize}"
+    #{build_vmx_customize(@server.vmx_parameters,instance_dir)}
   end
 
   #{additions.join("\n")}
@@ -250,11 +320,8 @@ end
         EOF
         file
 
-        # Create folder and write Vagrant file
-        instance_dir = File.join(locate_config_value(:vagrant_dir), @server.name)
         instance_file = File.join(instance_dir, 'Vagrantfile')
         ui.msg("Creating #{instance_file}")
-        FileUtils.mkdir_p(instance_dir)
         File.open(instance_file, 'w') { |f| f.write(file) }
       end
 
@@ -322,7 +389,9 @@ end
           :share_folders => config[:share_folders],
           :port_forward => config[:port_forward],
           :use_cachier => config[:use_cachier],
-          :vb_customize => locate_config_value(:vb_customize)
+          :vb_customize => locate_config_value(:vb_customize),
+          :vmx_parameters => locate_config_value(:vmx_parameters),
+          :inline_config => config[:inline_config]
         }
 
         # Get specified IP address for new instance or pick an unused one from the subnet pool.

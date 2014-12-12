@@ -24,7 +24,15 @@ class Chef
         no_cwd_change = opts[:no_cwd_change] || false
 
         unless no_cwd_change
-          cwd = Dir.getwd()
+
+          # Dir.getwd throws an unknown exception when this plugin
+          # is run in a multi-threaded environment
+          begin
+            cwd = Dir.getwd()
+          rescue
+            no_cwd_change = true
+          end
+
           Dir.chdir(File.join(locate_config_value(:vagrant_dir), instance))
         end
 
