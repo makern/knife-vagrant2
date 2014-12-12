@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.name         = 'knife-vagrant2'
   s.version      = Knife::Vagrant::VERSION
   s.authors      = ['Markus Kern']
-  s.email        = ['chef@mkern.fastmail.fm']
+  s.email        = ['makern@users.noreply.github.com']
   s.homepage     = 'https://github.com/makern/knife-vagrant2'
   s.summary      = %q{Vagrant support for Chef's knife command}
   s.description  = s.summary

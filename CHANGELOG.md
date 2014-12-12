@@ -1,4 +1,4 @@
-# 0.0.5 (unreleased)
+# 0.0.5 (2014-12-11)
 
 ## Changes and new features
 
