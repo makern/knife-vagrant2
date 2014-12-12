@@ -2,6 +2,10 @@
 
 ## Changes and new features
 
+* Added --vmx-customize option to pass arbitrary parameters to VMware providers
+* Added --vagrant-config option to extend Vagrantfile with custom options
+
+
 ## Fixes
 
 * Fix missing `ostruct` dependency with newer Chef versions

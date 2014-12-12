@@ -157,10 +157,18 @@ class Chef
         :long => "--vb-customize VBOXMANAGE_COMMANDS",
         :description => "List of customize options for the virtualbox vagrant provider separated by ::"
 
+      option :vmx_customize,
+        :long => "--vmx-customize VMX_PARAMETERS",
+        :description => "List of parameters for the vmware vagrant providers separated by ::"
+
       option :provider,
-        :long => "--provider Provider",
+        :long => "--provider PROVIDER",
         :description => "The vagrant provider to use for the server",
         :default => 'virtualbox'
+
+      option :vagrant_config,
+        :long => "--vagrant-config SETTINGS",
+        :description => "Lines of configuration to be inserted into the Vagrantfile separated by ::"
 
       def run
         $stdout.sync = true
@@ -208,6 +216,10 @@ class Chef
         customize.split(/::/).collect { |k| "vb.customize [ #{k} ]" }.join("\n") if customize
       end
 
+      def build_vmx_customize(customize)
+        customize.split(/::/).collect { |k| "v.vmx [ #{k} ]" }.join("\n") if customize
+      end
+
       def build_shares(share_folders)
         share_folders.collect do |share|
           host, guest = share.chomp.split "::"
@@ -219,6 +231,9 @@ class Chef
         additions = []
         if @server.use_cachier
           additions << 'config.cache.auto_detect = true' # enable vagarant-cachier
+        end
+        if @server.vagrant_config
+          additions << @server.vagrant_config.split(/::/)
         end
 
         file = <<-EOF
@@ -238,11 +253,13 @@ Vagrant.configure("2") do |config|
   end
   
   config.vm.provider :vmware_fusion do |v|
-     v.vmx["memsize"] = "#{@server.memsize}"
+    v.vmx["memsize"] = "#{@server.memsize}"
+    #{build_vmx_customize(@server.vmx_customize)}
   end
 
   config.vm.provider :vmware_workstation do |v|
-     v.vmx["memsize"] = "#{@server.memsize}"
+    v.vmx["memsize"] = "#{@server.memsize}"
+    #{build_vmx_customize(@server.vmx_customize)}
   end
 
   #{additions.join("\n")}
@@ -322,7 +339,9 @@ end
           :share_folders => config[:share_folders],
           :port_forward => config[:port_forward],
           :use_cachier => config[:use_cachier],
-          :vb_customize => locate_config_value(:vb_customize)
+          :vb_customize => locate_config_value(:vb_customize),
+          :vmx_customize => locate_config_value(:vmx_customize),
+          :vagrant_config => locate_config_value(:vagrant_config)
         }
 
         # Get specified IP address for new instance or pick an unused one from the subnet pool.
