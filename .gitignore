@@ -7,3 +7,4 @@ Icon?
 *.gem
 Gemfile.lock
 
+.idea
