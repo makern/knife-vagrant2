@@ -191,7 +191,9 @@ class Chef
         cmd = "up --provider #{locate_config_value(:provider)}"
         vagrant_exec(@server.name, cmd)
 
-        write_insecure_key
+        if options[:identity_file].nil?
+          write_insecure_key
+        end
         print "\n#{ui.color("Waiting for sshd", :magenta)}"
         wait_for_sshd(@server.ip_address)
 
@@ -234,6 +236,9 @@ class Chef
         end
         if @server.vagrant_config
           additions << @server.vagrant_config.split(/::/)
+        end
+        unless config[:identity_file].nil?
+          additions << 'config.ssh.private_key_path = "' + config[:identity_file] + '"'
         end
 
         file = <<-EOF
