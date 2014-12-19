@@ -1,3 +1,8 @@
+# 0.0.7 (unreleased) 
+## Changes and new features 
+
+*Added support for vagrant 1.7 private_key files instead of the default insecure key
+
 # 0.0.6 (unreleased)
 
 ## Changes and new features
