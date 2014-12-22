@@ -1,4 +1,5 @@
 require 'chef/knife/vagrant_base'
+require 'find'
 
 class Chef
   class Knife
@@ -190,8 +191,11 @@ class Chef
         write_vagrantfile
         cmd = "up --provider #{locate_config_value(:provider)}"
         vagrant_exec(@server.name, cmd)
+        @vagrant_version = vagrant_exec(@server.name, '-v', {:no_cwd_change =>true, :fetch_output=>true}).gsub("Vagrant ", "").gsub(/\.\d+$/, '').to_f
 
-        if options[:identity_file].nil?
+        msg_pair("Using vagrant version ", @vagrant_version)
+
+        if options[:identity_file].nil? && @vagrant_version < 1.7
           write_insecure_key
         end
         print "\n#{ui.color("Waiting for sshd", :magenta)}"
@@ -286,8 +290,19 @@ end
         bootstrap.config[:ssh_user] = config[:ssh_user]
         bootstrap.config[:ssh_port] = config[:ssh_port]
         bootstrap.config[:ssh_gateway] = config[:ssh_gateway]
-        bootstrap.config[:identity_file] = config[:identity_file] || File.join(locate_config_value(:vagrant_dir), 'insecure_key')
         bootstrap.config[:chef_node_name] = locate_config_value(:chef_node_name) || server.ip
+
+        if @vagrant_version < 1.7
+          bootstrap.config[:identity_file] = config[:identity_file] || File.join(locate_config_value(:vagrant_dir), 'insecure_key')
+        else
+          path = File.join(locate_config_value(:vagrant_dir), locate_config_value(:chef_node_name), '.vagrant/')
+          Find.find(path) do |f| #Vagrant puts the private key under the provider (i.e. 'virtualbox') so we search for it
+            if File.basename(f) == 'private_key'
+              bootstrap.config[:identity_file] = f
+            end
+          end
+        end
+
         bootstrap.config[:distro] = locate_config_value(:distro) || "chef-full"
         bootstrap.config[:use_sudo] = true unless config[:ssh_user] == 'root'
         bootstrap.config[:host_key_verify] = config[:host_key_verify]
