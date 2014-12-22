@@ -219,7 +219,7 @@ class Chef
       end
 
       def build_vmx_customize(customize)
-        customize.split(/::/).collect { |k| "v.vmx [ #{k} ]" }.join("\n") if customize
+        customize.split(/::/).collect { |k| "v.vmx[#{k.split(/=/)[0]}] = #{k.split(/=/)[1]}" }.join("\n") if customize
       end
 
       def build_shares(share_folders)
