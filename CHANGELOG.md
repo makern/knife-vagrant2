@@ -1,3 +1,12 @@
+# 0.0.7 (unreleased)
+
+## Changes and new features
+
+
+## Fixes
+
+
+
 # 0.0.6 (2014-12-30)
 
 ## Changes and new features
