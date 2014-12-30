@@ -1,4 +1,4 @@
-# 0.0.6 (unreleased)
+# 0.0.6 (2014-12-30)
 
 ## Changes and new features
 
@@ -61,3 +61,4 @@
 * [Robert J. Berger](https://github.com/rberger)
 * [xsunsmile](https://github.com/xsunsmile)
 * [Mevan Samaratunga](https://github.com/mevansam)
+* [Joshua Kruck](https://github.com/krujos)
