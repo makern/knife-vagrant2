@@ -191,13 +191,7 @@ class Chef
         write_vagrantfile
         cmd = "up --provider #{locate_config_value(:provider)}"
         vagrant_exec(@server.name, cmd)
-        @vagrant_version = vagrant_exec(@server.name, '-v', {:no_cwd_change =>true, :fetch_output=>true}).gsub("Vagrant ", "").gsub(/\.\d+$/, '').to_f
 
-        msg_pair("Using vagrant version ", @vagrant_version)
-
-        if options[:identity_file].nil? && @vagrant_version < 1.7
-          write_insecure_key
-        end
         print "\n#{ui.color("Waiting for sshd", :magenta)}"
         wait_for_sshd(@server.ip_address)
 
@@ -223,7 +217,7 @@ class Chef
       end
 
       def build_vmx_customize(customize)
-        customize.split(/::/).collect { |k| "v.vmx[#{k.split(/=/)[0]}] = #{k.split(/=/)[1]}" }.join("\n") if customize
+        customize.split(/::/).collect { |k| "v.vmx[#{k.split('=')[0]}] = #{k.split('=')[1]}" }.join("\n") if customize
       end
 
       def build_shares(share_folders)
@@ -292,11 +286,19 @@ end
         bootstrap.config[:ssh_gateway] = config[:ssh_gateway]
         bootstrap.config[:chef_node_name] = locate_config_value(:chef_node_name) || server.ip
 
-        if @vagrant_version < 1.7
-          bootstrap.config[:identity_file] = config[:identity_file] || File.join(locate_config_value(:vagrant_dir), 'insecure_key')
+        # Starting from version 1.7 Vagrant replaces the fixed insecure key with a new,
+        # random one the first time it is brought up. If that's the case we need to use
+        # it to bootstrap.
+        msg_pair("Vagrant version", vagrant_version)
+        if config[:identity_file]
+          bootstrap.config[:identity_file] = config[:identity_file]
+        elsif vagrant_version_cmp('1.7') < 0
+          write_insecure_key
+          bootstrap.config[:identity_file] = File.join(locate_config_value(:vagrant_dir), 'insecure_key')
         else
-          path = File.join(locate_config_value(:vagrant_dir), locate_config_value(:chef_node_name), '.vagrant/')
-          Find.find(path) do |f| #Vagrant puts the private key under the provider (i.e. 'virtualbox') so we search for it
+          # Vagrant puts the private key under the provider (i.e. 'virtualbox') so we search for it
+          path = File.join(locate_config_value(:vagrant_dir), server.name, '.vagrant/')
+          Find.find(path) do |f|
             if File.basename(f) == 'private_key'
               bootstrap.config[:identity_file] = f
             end

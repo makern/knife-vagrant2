@@ -2,7 +2,12 @@
 
 ## Changes and new features
 
+* Support for the new, random SSH keys in Vagrant 1.7
+
+
 ## Fixes
+
+* Make --vmx-customize option actually work
 
 
 # 0.0.5 (2014-12-11)

@@ -93,6 +93,17 @@ class Chef
         @vagrant_instances
       end
 
+      def vagrant_version
+        @vagrant_version ||= begin
+          version = vagrant_exec('', '-v', { :no_cwd_change => true, :fetch_output => true })
+          version = /Vagrant\s+([0-9\.]+)/.match(version) { |m| m[1] }
+        end
+      end
+
+      def vagrant_version_cmp(version)
+        Gem::Version.new(vagrant_version) <=> Gem::Version.new(version)
+      end
+
       def write_insecure_key
         # The private key most vagrant boxes use.
         insecure_key = <<-EOF
