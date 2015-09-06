@@ -252,6 +252,7 @@ Vagrant.configure("2") do |config|
  
   config.vm.provider :virtualbox do |vb|
     vb.customize [ "modifyvm", :id, "--memory", #{@server.memsize} ]
+    vb.customize ["modifyvm", :id, "--audio", "none", "--usb", "off", "--usbehci", "off"] 
     #{build_vb_customize(@server.vb_customize)}
   end
   

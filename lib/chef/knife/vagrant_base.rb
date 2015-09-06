@@ -28,7 +28,7 @@ class Chef
           Dir.chdir(File.join(locate_config_value(:vagrant_dir), instance))
         end
 
-        cmd = "vagrant #{cmd}"
+        cmd = "bundler exec vagrant #{cmd}"
         output = nil
         if defined? Bundler
           # Needed if we are run from inside a bundler environment and vagrant
